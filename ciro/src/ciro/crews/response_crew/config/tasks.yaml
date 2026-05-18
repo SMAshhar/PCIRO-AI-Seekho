@@ -1,0 +1,41 @@
+response_planning_task:
+  description: >
+    Create a response plan for the following verified crisis:
+
+    Crisis Type: {crisis_type}
+    Sector: {sector}
+    Severity: {severity}
+    Affected Population: {affected_population}
+    Recommended Resources: {recommended_resources}
+    Estimated Response Time: {estimated_response_time_min} minutes
+
+    Your plan must include:
+    1. Prioritized list of actions (dispatch, alert, block roads, etc.)
+    2. An alert message suitable for SMS/push notification to citizens
+    3. Whether this requires Incident Commander approval (critical severity)
+    4. Expected Before/After improvement metrics
+
+    Compose a clear, concise alert message in both English and Roman Urdu.
+  expected_output: >
+    A JSON object with: actions (list of action items with type,
+    description, assigned_to, priority), alert_message,
+    requires_approval (boolean), simulation_metrics (Before/After),
+    and total_estimated_time_min.
+  agent: response_planner
+
+dispatch_task:
+  description: >
+    Execute the response plan by dispatching alerts and creating tickets.
+    Use the alert_dispatcher tool with:
+    - crisis_type: {crisis_type}
+    - sector: {sector}
+    - severity: {severity}
+    - affected_population: {affected_population}
+    - alert_message: the message from the response plan
+
+    Report the ticket ID, channels used, and actions taken.
+  expected_output: >
+    A JSON object with: ticket_id, alert_channels used,
+    actions_taken with status, simulation_metrics,
+    and a summary of the dispatch operation.
+  agent: logistics_agent

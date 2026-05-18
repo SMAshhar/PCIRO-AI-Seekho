@@ -1,0 +1,34 @@
+parse_report_task:
+  description: >
+    Parse the following citizen crisis report using the roman_urdu_parser tool:
+
+    Report Text: "{report_text}"
+    GPS Location: lat={latitude}, lon={longitude}
+    Sector: {sector}
+
+    Use the roman_urdu_parser tool to extract the crisis type, keywords,
+    and language. Then provide a structured summary of what crisis is
+    being reported, where it is happening, and your confidence level.
+  expected_output: >
+    A JSON object containing: parsed_intent (crisis type), keywords found,
+    detected_sectors, language_detected, confidence score, and original_text.
+  agent: nlp_parser
+
+normalize_signal_task:
+  description: >
+    Take the parsed report from the NLP parser and normalize it into
+    a clean, standardized crisis signal. Ensure the crisis type is
+    one of: flood, flash_flood, road_blockage, traffic_gridlock,
+    heatwave, fire, power_outage, air_quality, road_collapse,
+    sewage_overflow, earthquake, unknown.
+
+    Verify the sector name matches known Islamabad sectors.
+    Set a proper confidence score between 0 and 1.
+
+    Input location: lat={latitude}, lon={longitude}, sector={sector}
+  expected_output: >
+    A JSON object with fields: signal_id, original_text, parsed_intent,
+    extracted_location (lat, lon, sector), language_detected, keywords,
+    confidence, source, timestamp. This is the normalized signal ready
+    for the analysis crew.
+  agent: data_normalizer
