@@ -1,0 +1,57 @@
+corroboration_task:
+  description: >
+    Corroborate the following crisis signal using the weather_fetcher
+    and corroboration_engine tools:
+
+    Crisis Type: {crisis_type}
+    Location: lat={latitude}, lon={longitude}
+    Sector: {sector}
+    Original Report: "{report_text}"
+    Number of Similar Reports: {num_similar_reports}
+
+    Steps:
+    1. Use weather_fetcher tool with the latitude and longitude
+    2. Use corroboration_engine tool with the crisis_type, location,
+       weather data result, num_similar_reports, and sector
+    3. Report the final corroboration score and whether the event
+       is verified or flagged as a false report
+  expected_output: >
+    A JSON object with: corroboration_score (0-100), severity,
+    is_verified (boolean), is_false_report (boolean),
+    false_report_reason (if applicable), and sources array
+    with per-source score breakdowns.
+  agent: signal_corroborator
+
+detection_task:
+  description: >
+    Based on the corroboration results, determine if this is a
+    verified crisis event. If the corroboration score is above 50
+    and is_verified is true, classify it as a real event.
+
+    If is_false_report is true, clearly state why and recommend
+    archiving without escalation.
+
+    Produce a complete event record with event_id, crisis_type,
+    location, severity, corroboration_score, and summary.
+  expected_output: >
+    A JSON object representing the verified (or rejected) event:
+    event_id, crisis_type, location, severity, corroboration_score,
+    is_verified, is_false_report, summary, and timestamp.
+  agent: event_detector
+
+impact_assessment_task:
+  description: >
+    For the detected event, assess its impact using the impact_assessor
+    tool. Pass the crisis_type, sector, and severity.
+
+    Crisis Type: {crisis_type}
+    Sector: {sector}
+    Severity: determined by the event detector
+
+    Provide a comprehensive impact assessment including affected
+    population, infrastructure at risk, and recommended resources.
+  expected_output: >
+    A JSON object with: affected_population, affected_sectors,
+    infrastructure_at_risk, recommended_resources,
+    estimated_response_time_min, risk_level, and summary.
+  agent: impact_assessor_agent
