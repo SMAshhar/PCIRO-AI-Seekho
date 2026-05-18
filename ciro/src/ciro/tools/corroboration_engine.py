@@ -18,11 +18,45 @@ auto-score below threshold → archived, not escalated.
 """
 
 import json
+from typing import Any
+
 from crewai.tools import tool
+from pydantic import BaseModel, Field
 
 
 CORROBORATION_THRESHOLD = 50  # Minimum score to verify an event
 FALSE_REPORT_THRESHOLD = 20   # Below this = likely false report
+
+
+class WeatherData(BaseModel):
+    temperature_celsius: float = Field(0.0)
+    precipitation_mm: float = Field(0.0)
+    rain_mm: float = Field(0.0)
+    humidity_percent: float = Field(0.0)
+    wind_speed_kmh: float = Field(0.0)
+    weather_code: int = Field(0)
+    weather_severity: str = Field("unknown")
+    weather_notes: list[str] = Field(default_factory=list)
+    supports_flood_report: bool = Field(False)
+    supports_heatwave_report: bool = Field(False)
+    data_available: bool = Field(False)
+
+
+def _normalize_weather(weather_data: Any) -> dict[str, Any]:
+    if isinstance(weather_data, str):
+        try:
+            weather_data = json.loads(weather_data)
+        except (json.JSONDecodeError, TypeError):
+            return {"data_available": False}
+
+    if not isinstance(weather_data, dict):
+        return {"data_available": False}
+
+    try:
+        weather = WeatherData.parse_obj(weather_data)
+        return weather.dict()
+    except Exception:
+        return {"data_available": False}
 
 
 @tool("corroboration_engine")
@@ -47,10 +81,7 @@ def corroboration_engine(
     Use this tool after the NLP parser has classified the crisis and
     weather data has been fetched for the location.
     """
-    try:
-        weather = json.loads(weather_data) if isinstance(weather_data, str) else weather_data
-    except (json.JSONDecodeError, TypeError):
-        weather = {"data_available": False}
+    weather = _normalize_weather(weather_data)
 
     sources = []
     total_score = 0.0
