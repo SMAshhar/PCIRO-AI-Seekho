@@ -1,0 +1,42 @@
+diff --git a/node_modules/react-native-gesture-handler/android/src/main/java/com/swmansion/gesturehandler/react/RNGestureHandlerButtonViewManager.kt b/node_modules/react-native-gesture-handler/android/src/main/java/com/swmansion/gesturehandler/react/RNGestureHandlerButtonViewManager.kt
+index e4114c4..18ec7c6 100644
+--- a/node_modules/react-native-gesture-handler/android/src/main/java/com/swmansion/gesturehandler/react/RNGestureHandlerButtonViewManager.kt
++++ b/node_modules/react-native-gesture-handler/android/src/main/java/com/swmansion/gesturehandler/react/RNGestureHandlerButtonViewManager.kt
+@@ -136,13 +136,15 @@ class RNGestureHandlerButtonViewManager :
+ 
+   @ReactProp(name = ViewProps.POINTER_EVENTS)
+   override fun setPointerEvents(view: ButtonViewGroup, pointerEvents: String?) {
+-    view.pointerEvents = when (pointerEvents) {
+-      "none" -> PointerEvents.NONE
+-      "box-none" -> PointerEvents.BOX_NONE
+-      "box-only" -> PointerEvents.BOX_ONLY
+-      "auto", null -> PointerEvents.AUTO
+-      else -> PointerEvents.AUTO
+-    }
++    view.applyReactPointerEvents(
++      when (pointerEvents) {
++        "none" -> PointerEvents.NONE
++        "box-none" -> PointerEvents.BOX_NONE
++        "box-only" -> PointerEvents.BOX_ONLY
++        "auto", null -> PointerEvents.AUTO
++        else -> PointerEvents.AUTO
++      },
++    )
+   }
+ 
+   override fun onAfterUpdateTransaction(view: ButtonViewGroup) {
+@@ -214,7 +216,13 @@ class RNGestureHandlerButtonViewManager :
+ 
+     var exclusive = true
+ 
+-    override var pointerEvents: PointerEvents = PointerEvents.AUTO
++    private var reactPointerEvents: PointerEvents = PointerEvents.AUTO
++
++    override fun getPointerEvents(): PointerEvents = reactPointerEvents
++
++    fun applyReactPointerEvents(events: PointerEvents) {
++      reactPointerEvents = events
++    }
+ 
+     private var buttonBackgroundColor = Color.TRANSPARENT
+     private var needBackgroundUpdate = false

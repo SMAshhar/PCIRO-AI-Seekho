@@ -35,6 +35,23 @@ set APP_HOME=%DIRNAME%
 @rem Resolve any "." and ".." in APP_HOME to make it shorter.
 for %%i in ("%APP_HOME%") do set APP_HOME=%%~fi
 
+@rem React Native / AGP settings plugin requires JVM 11+. Many devs still have JAVA_HOME on JDK 8.
+@rem If JAVA_HOME looks like Java 8, prefer Android Studio JBR or a common JDK 17 install; else clear JAVA_HOME so PATH is used.
+if defined JAVA_HOME (
+  echo %JAVA_HOME% | findstr /i /c:"jdk-8" /c:"jre-8" /c:"jdk1.8" /c:"jre1.8" /c:"java-1.8" /c:"\jdk8" >nul 2>&1
+  if not errorlevel 1 (
+    if exist "C:\Program Files\Android\Android Studio\jbr\bin\java.exe" (
+      set "JAVA_HOME=C:\Program Files\Android\Android Studio\jbr"
+    ) else if exist "C:\Program Files\Java\jdk-17\bin\java.exe" (
+      set "JAVA_HOME=C:\Program Files\Java\jdk-17"
+    ) else if exist "%LOCALAPPDATA%\Programs\Android\Android Studio\jbr\bin\java.exe" (
+      set "JAVA_HOME=%LOCALAPPDATA%\Programs\Android\Android Studio\jbr"
+    ) else (
+      set "JAVA_HOME="
+    )
+  )
+)
+
 @rem Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
 set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m"
 
