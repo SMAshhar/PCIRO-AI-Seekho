@@ -5,7 +5,35 @@ import {PermissionsAndroid, Platform} from 'react-native';
 const ISLAMABAD_DEFAULT = {
   lat: 33.6844,
   lon: 73.0479,
-  sector: 'G-10',
+  sector: 'G-10, Islamabad',
+};
+
+const reverseGeocode = async (lat: number, lon: number): Promise<string> => {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
+      {
+        headers: {
+          'User-Agent': 'CIRO_Mobile_App/1.0',
+          'Accept-Language': 'en-US,en;q=0.9',
+        },
+      },
+    );
+    if (!res.ok) return 'Unknown Area';
+    const data = await res.json();
+    const addr = data.address;
+    if (!addr) return 'Unknown Area';
+
+    const localArea =
+      addr.suburb || addr.neighbourhood || addr.residential || addr.road || '';
+    const city = addr.city || addr.town || addr.county || '';
+
+    if (localArea && city) return `${localArea}, ${city}`;
+    if (city) return city;
+    return localArea || 'Unknown Area';
+  } catch (err) {
+    return 'Unknown Area';
+  }
 };
 
 export const useLocation = () => {
@@ -35,12 +63,11 @@ export const useLocation = () => {
     }
 
     Geolocation.getCurrentPosition(
-      pos => {
-        setLocation({
-          lat: pos.coords.latitude,
-          lon: pos.coords.longitude,
-          sector: 'G-10',
-        });
+      async pos => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        const sector = await reverseGeocode(lat, lon);
+        setLocation({lat, lon, sector});
         setLoading(false);
       },
       () => {

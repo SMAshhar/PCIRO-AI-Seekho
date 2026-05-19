@@ -11,6 +11,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {CrisisEvent} from '../types/models';
 import {colors} from '../constants/theme';
 import {getCrisisTypeLabel} from '../utils/crisisTypeLabels';
+import {useT} from '../utils/i18n';
 
 interface Props {
   crisis: CrisisEvent;
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export const IncidentBanner: React.FC<Props> = ({crisis, onPress}) => {
+  const t = useT();
   const opacity = useSharedValue(0.85);
 
   useEffect(() => {
@@ -36,10 +38,10 @@ export const IncidentBanner: React.FC<Props> = ({crisis, onPress}) => {
   return (
     <Animated.View style={animStyle}>
       <Pressable style={styles.banner} onPress={onPress}>
-        <Icon name="alert-decagram" size={16} color={colors.text} />
-        <Text style={styles.text} numberOfLines={1}>
-          CRITICAL EVENT · {crisis.sector}{' '}
-          {getCrisisTypeLabel(crisis.crisis_type)} · Tap to review
+        <Icon name="alert-decagram" size={20} color={colors.text} />
+        <Text style={styles.text} numberOfLines={2}>
+          {t('criticalEvent')} · {crisis.sector} ·{' '}
+          {getCrisisTypeLabel(crisis.crisis_type)} · {t('tapToReview')}
         </Text>
       </Pressable>
     </Animated.View>
@@ -48,17 +50,24 @@ export const IncidentBanner: React.FC<Props> = ({crisis, onPress}) => {
 
 const styles = StyleSheet.create({
   banner: {
-    height: 48,
+    minHeight: 56,
     backgroundColor: colors.danger,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    gap: 12,
+    elevation: 8,
+    shadowColor: colors.dangerGlow,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 1,
+    shadowRadius: 12,
   },
   text: {
     flex: 1,
     color: colors.text,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
+    lineHeight: 20,
   },
 });

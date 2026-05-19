@@ -22,14 +22,7 @@ import {Severity} from '../types/models';
 
 type Filter = 'all' | Severity | 'resolved';
 
-const FILTERS: {key: Filter; label: string}[] = [
-  {key: 'all', label: 'All'},
-  {key: 'critical', label: 'Critical'},
-  {key: 'high', label: 'High'},
-  {key: 'medium', label: 'Medium'},
-  {key: 'low', label: 'Low'},
-  {key: 'resolved', label: 'Resolved'},
-];
+
 
 export const CrisisFeedScreen = () => {
   const t = useT();
@@ -38,6 +31,18 @@ export const CrisisFeedScreen = () => {
   const crises = useCrisisStore(s => s.activeCrises);
   const [filter, setFilter] = useState<Filter>('all');
   const [refreshing, setRefreshing] = useState(false);
+
+  const FILTERS: {key: Filter; label: string}[] = useMemo(
+    () => [
+      {key: 'all', label: t('allTypes')},
+      {key: 'critical', label: t('sevCritical')},
+      {key: 'high', label: t('sevHigh')},
+      {key: 'medium', label: t('sevMedium')},
+      {key: 'low', label: t('sevLow')},
+      {key: 'resolved', label: t('sevResolved')},
+    ],
+    [t],
+  );
 
   const critical = useMemo(
     () => crises.find(c => c.severity === 'critical' && c.status !== 'resolved'),
@@ -72,7 +77,8 @@ export const CrisisFeedScreen = () => {
         />
       )}
       <View style={styles.header}>
-        <Text style={styles.title}>{t('feedTitle')}</Text>
+        <Text style={styles.title}>{t('feedTitle') || 'CIRO'}</Text>
+        <Text style={styles.subtitle}>{t('liveOverview')}</Text>
       </View>
       <ScrollView
         horizontal
@@ -127,21 +133,30 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.navy,
     paddingHorizontal: spacing.s5,
-    paddingVertical: spacing.s4,
+    paddingVertical: spacing.s5,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  title: {...typography.display, fontSize: 22},
-  chips: {maxHeight: 48, marginVertical: spacing.s3},
-  chipsContent: {paddingHorizontal: spacing.s5, gap: 8},
+  title: {...typography.display, fontSize: 24, letterSpacing: 0.5},
+  subtitle: {
+    ...typography.label,
+    color: colors.muted,
+    marginTop: 4,
+  },
+  chips: {maxHeight: 54, marginVertical: spacing.s4},
+  chipsContent: {paddingHorizontal: spacing.s5, gap: 10, alignItems: 'center'},
   chip: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: 20,
     backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
-    marginRight: 8,
+    borderColor: colors.borderStrong,
   },
-  chipActive: {borderColor: colors.blue},
-  list: {paddingHorizontal: spacing.s5, paddingBottom: spacing.s8},
+  chipActive: {
+    backgroundColor: colors.primaryGlow,
+    borderColor: colors.blue,
+  },
+  list: {paddingTop: spacing.s2, paddingHorizontal: spacing.s5, paddingBottom: spacing.s8},
   empty: {...typography.body, color: colors.muted, textAlign: 'center', marginTop: 48},
 });

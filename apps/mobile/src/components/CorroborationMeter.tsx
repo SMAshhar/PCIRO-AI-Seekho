@@ -54,8 +54,7 @@ export const CorroborationMeter: React.FC<Props> = ({
   });
 
   return (
-    <View style={styles.outer}>
-      <View style={styles.inner}>
+    <View style={styles.container}>
         <Svg width={size} height={size}>
           <Circle
             cx={cx}
@@ -88,27 +87,15 @@ export const CorroborationMeter: React.FC<Props> = ({
             {zone.label}
           </Text>
         </View>
-      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  outer: {
-    padding: 4,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    alignSelf: 'center',
-  },
-  inner: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: spacing.s4,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+  container: {
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.s2,
   },
   center: {
     position: 'absolute',

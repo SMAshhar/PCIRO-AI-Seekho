@@ -1,20 +1,30 @@
 import {CrisisType} from '../types/models';
+import {t} from './i18n';
 
-const labelsEn: Record<CrisisType, string> = {
-  flood: 'Flooding',
-  fire: 'Fire',
-  heatwave: 'Heatwave',
-  road_blockage: 'Road Blockage',
-  power_outage: 'Power Outage',
-  air_quality: 'Air Quality',
-  flash_flood: 'Flash Flood',
-  earthquake: 'Earthquake',
-  traffic_gridlock: 'Traffic Gridlock',
-  sewage_overflow: 'Sewage Overflow',
-  unknown: 'Unknown',
+export const getCrisisTypeLabel = (type: CrisisType): string => {
+  switch (type) {
+    case 'flood':
+      return t('flood');
+    case 'fire':
+      return t('fire');
+    case 'heatwave':
+      return t('heatwave');
+    case 'road_blockage':
+      return t('road');
+    case 'power_outage':
+      return t('power');
+    case 'air_quality':
+      return t('air');
+    case 'flash_flood':
+      return t('flashFlood');
+    case 'earthquake':
+      return t('quake');
+    case 'traffic_gridlock':
+      return t('trafficGridlock');
+    case 'sewage_overflow':
+      return t('sewageOverflow');
+    case 'unknown':
+    default:
+      return t('other');
+  }
 };
-
-export const getCrisisTypeLabel = (
-  type: CrisisType,
-  _lang: 'en' | 'ur' = 'en',
-): string => labelsEn[type] ?? type;

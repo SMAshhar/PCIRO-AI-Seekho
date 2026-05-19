@@ -10,6 +10,7 @@ import {getScoreZone} from '../utils/scoreZone';
 import {CrisisTypeIcon} from './CrisisTypeIcon';
 import {SeverityBadge} from './SeverityBadge';
 import {AgentTimeline} from './AgentTimeline';
+import {useT} from '../utils/i18n';
 
 interface Props {
   crisis: CrisisEvent;
@@ -18,9 +19,15 @@ interface Props {
 }
 
 export const CrisisCard: React.FC<Props> = ({crisis, onPress, index = 0}) => {
+  const t = useT();
   const severityColor = getSeverityColor(crisis.severity);
   const zone = getScoreZone(crisis.corroboration_score);
   const scorePct = crisis.corroboration_score;
+
+  let displayTitle = crisis.title;
+  if (crisis.title === 'G-10 Urban Flooding') displayTitle = t('mockFloodTitle');
+  if (crisis.title === 'I-8 Markaz Gridlock') displayTitle = t('mockTrafficTitle');
+  if (crisis.title === 'F-7 Heat Advisory') displayTitle = t('mockHeatTitle');
 
   return (
     <Animated.View entering={FadeInUp.delay(index * 50).duration(300)}>
@@ -35,7 +42,7 @@ export const CrisisCard: React.FC<Props> = ({crisis, onPress, index = 0}) => {
           <CrisisTypeIcon type={crisis.crisis_type} />
           <View style={styles.titleBlock}>
             <Text style={typography.heading} numberOfLines={1}>
-              {crisis.title}
+              {displayTitle}
             </Text>
             <Text style={typography.label}>
               {formatRelativeTime(crisis.ingest_timestamp)} · {crisis.sector}
@@ -45,7 +52,7 @@ export const CrisisCard: React.FC<Props> = ({crisis, onPress, index = 0}) => {
         </View>
 
         <View style={styles.scoreSection}>
-          <Text style={typography.label}>Corroboration Score</Text>
+          <Text style={typography.label}>{t('corroborationScore')}</Text>
           <View style={styles.scoreRow}>
             <View style={styles.scoreTrack}>
               <View
@@ -72,32 +79,32 @@ export const CrisisCard: React.FC<Props> = ({crisis, onPress, index = 0}) => {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderStrong,
     borderLeftWidth: 4,
-    padding: spacing.s4,
-    marginBottom: spacing.s3,
+    padding: spacing.s5,
+    marginBottom: spacing.s4,
   },
-  pressed: {backgroundColor: colors.elevated, transform: [{scale: 0.99}]},
-  topRow: {flexDirection: 'row', alignItems: 'flex-start', gap: 12},
-  titleBlock: {flex: 1},
-  scoreSection: {marginTop: 12},
-  scoreRow: {flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6},
+  pressed: {backgroundColor: colors.elevated, transform: [{scale: 0.98}]},
+  topRow: {flexDirection: 'row', alignItems: 'flex-start', gap: 14},
+  titleBlock: {flex: 1, gap: 4},
+  scoreSection: {marginTop: 16},
+  scoreRow: {flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 8},
   scoreTrack: {
     flex: 1,
-    height: 6,
-    borderRadius: 4,
-    backgroundColor: colors.void,
+    height: 8,
+    borderRadius: 8,
+    backgroundColor: `${colors.void}99`,
     overflow: 'hidden',
   },
-  scoreFill: {height: '100%', borderRadius: 4},
+  scoreFill: {height: '100%', borderRadius: 8},
   scoreNum: {
     fontFamily: 'monospace',
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     color: colors.text,
-    minWidth: 48,
+    minWidth: 52,
     textAlign: 'right',
   },
 });

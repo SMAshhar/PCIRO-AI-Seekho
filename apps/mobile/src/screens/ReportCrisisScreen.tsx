@@ -11,26 +11,16 @@ import {
   View,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {useForm, Controller} from 'react-hook-form';
+import {Controller, useForm} from 'react-hook-form';
 import {launchImageLibrary} from 'react-native-image-picker';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {reportApi} from '../api/reportApi';
 import {useLocation} from '../hooks/useLocation';
 import {useUserStore} from '../store/userStore';
 import {CrisisType} from '../types/models';
-import {ISLAMABAD_SECTORS} from '../constants/islamabadZones';
 import {colors, spacing, typography} from '../constants/theme';
 import {useT} from '../utils/i18n';
 
-const CRISIS_TYPES: {type: CrisisType; label: string}[] = [
-  {type: 'flood', label: 'Flood'},
-  {type: 'fire', label: 'Fire'},
-  {type: 'heatwave', label: 'Heatwave'},
-  {type: 'road_blockage', label: 'Road'},
-  {type: 'power_outage', label: 'Power'},
-  {type: 'air_quality', label: 'Air'},
-  {type: 'earthquake', label: 'Quake'},
-  {type: 'unknown', label: 'Other'},
-];
 
 interface FormValues {
   text: string;
@@ -39,9 +29,20 @@ interface FormValues {
 
 export const ReportCrisisScreen = () => {
   const t = useT();
-  const {location, loading: locLoading, setSector} = useLocation();
+  const {location, loading: locLoading, error: locError, refresh: refreshLoc} = useLocation();
   const deviceId = useUserStore(s => s.deviceId);
   const hint = useUserStore(s => s.reportLanguageHint);
+  
+  const CRISIS_TYPES = [
+    {type: 'flood' as CrisisType, label: t('flood')},
+    {type: 'fire' as CrisisType, label: t('fire')},
+    {type: 'heatwave' as CrisisType, label: t('heatwave')},
+    {type: 'road_blockage' as CrisisType, label: t('road')},
+    {type: 'power_outage' as CrisisType, label: t('power')},
+    {type: 'air_quality' as CrisisType, label: t('air')},
+    {type: 'earthquake' as CrisisType, label: t('quake')},
+    {type: 'unknown' as CrisisType, label: t('other')},
+  ];
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -53,8 +54,8 @@ export const ReportCrisisScreen = () => {
   const crisisType = watch('crisisType');
 
   const placeholders: Record<string, string> = {
-    en: 'Describe what is happening…',
-    ur: 'بیان کریں کیا ہو رہا ہے…',
+    en: t('describeHappening') + '...',
+    ur: t('describeHappening') + '...',
     roman_ur: 'G-10 mein kya ho raha hai, likhein…',
   };
 
@@ -92,7 +93,7 @@ export const ReportCrisisScreen = () => {
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.title}>{t('reportTitle')}</Text>
 
-        <Text style={styles.label}>Describe what&apos;s happening</Text>
+        <Text style={styles.label}>{t('describeHappening')}</Text>
         <Controller
           control={control}
           name="text"
@@ -115,36 +116,49 @@ export const ReportCrisisScreen = () => {
 
         <Text style={styles.hint}>EN · UR · Roman UR supported</Text>
 
-        <Text style={styles.label}>Crisis Type</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <Text style={[styles.label, {marginTop: 24}]}>{t('crisisType')}</Text>
+        <View style={styles.chipGrid}>
           {CRISIS_TYPES.map(ct => (
             <Pressable
               key={ct.type}
               onPress={() => setValue('crisisType', ct.type)}
-              style={[styles.chip, crisisType === ct.type && styles.chipOn]}>
-              <Text style={typography.body}>{ct.label}</Text>
+              style={[styles.typeChip, crisisType === ct.type && styles.typeChipOn]}>
+              <Text style={[
+                typography.body, 
+                crisisType === ct.type ? {color: '#fff', fontWeight: '600'} : {color: colors.text}
+              ]}>
+                {ct.label}
+              </Text>
             </Pressable>
           ))}
-        </ScrollView>
+        </View>
 
-        <Text style={styles.label}>Location</Text>
-        {locLoading ? (
-          <ActivityIndicator color={colors.blue} />
-        ) : (
-          <Text style={typography.body}>
-            📍 {location.sector}, Islamabad ({location.lat.toFixed(4)},{' '}
-            {location.lon.toFixed(4)})
-          </Text>
-        )}
-        <ScrollView horizontal style={{marginTop: 8}}>
-          {ISLAMABAD_SECTORS.slice(0, 8).map(s => (
-            <Pressable key={s} onPress={() => setSector(s)} style={styles.chip}>
-              <Text style={typography.label}>{s}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
+        <View style={[styles.labelRow, {marginTop: 24}]}>
+          <Text style={styles.label}>{t('location')}</Text>
+          {locError && <Text style={styles.errorText}>{locError}</Text>}
+        </View>
+        <View style={styles.locationCard}>
+          <View style={styles.locationLeft}>
+            <View style={styles.iconBox}>
+              <Icon name="map-marker-radius" size={22} color={colors.danger} />
+            </View>
+            <View>
+              <Text style={typography.subheading}>{location.sector}</Text>
+              <Text style={styles.coordText}>
+                {location.lat.toFixed(4)}, {location.lon.toFixed(4)}
+              </Text>
+            </View>
+          </View>
+          <Pressable onPress={refreshLoc} style={styles.refreshBtn}>
+            {locLoading ? (
+              <ActivityIndicator color={colors.blue} />
+            ) : (
+              <Icon name="crosshairs-gps" size={24} color={colors.blue} />
+            )}
+          </Pressable>
+        </View>
 
-        <Text style={[styles.label, {marginTop: 16}]}>Photo (optional)</Text>
+        <Text style={[styles.label, {marginTop: 24}]}>{t('photoOptional')}</Text>
         <Pressable
           style={styles.photoBtn}
           onPress={() =>
@@ -154,7 +168,8 @@ export const ReportCrisisScreen = () => {
               }
             })
           }>
-          <Text style={typography.body}>📷 Add Photo</Text>
+          <Icon name="camera-plus-outline" size={24} color={colors.text} />
+          <Text style={[typography.body, {marginLeft: 8}]}>{t('addPhoto')}</Text>
         </Pressable>
         {photoUri && (
           <Image source={{uri: photoUri}} style={styles.preview} />
@@ -179,44 +194,101 @@ const styles = StyleSheet.create({
   safe: {flex: 1, backgroundColor: colors.void},
   scroll: {padding: spacing.s5, paddingBottom: 40},
   title: {...typography.display, marginBottom: spacing.s6},
-  label: {...typography.label, marginBottom: 8, marginTop: 12},
+  label: {...typography.label, marginBottom: 8},
+  labelRow: {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8},
   input: {
     backgroundColor: colors.surface,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderStrong,
     color: colors.text,
-    padding: 12,
-    fontSize: 14,
+    padding: 16,
+    fontSize: 15,
   },
   multiline: {minHeight: 120, textAlignVertical: 'top'},
-  hint: {...typography.caption, marginTop: 6},
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginRight: 8,
-    borderRadius: 8,
+  hint: {...typography.caption, marginTop: 8},
+  chipGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  typeChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
     backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderStrong,
   },
-  chipOn: {borderColor: colors.blue},
-  photoBtn: {
-    padding: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderStyle: 'dashed',
-  },
-  preview: {width: '100%', height: 120, borderRadius: 8, marginTop: 8},
-  submit: {
-    marginTop: 24,
+  typeChipOn: {
     backgroundColor: colors.danger,
-    padding: 14,
-    borderRadius: 8,
+    borderColor: colors.danger,
+  },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginRight: 8,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+  },
+  chipOn: {
+    borderColor: colors.blue,
+    backgroundColor: colors.primaryGlow,
+  },
+  locationCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+  },
+  locationLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.dangerGlow,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  coordText: {
+    ...typography.caption,
+    color: colors.muted,
+    marginTop: 2,
+  },
+  refreshBtn: {
+    padding: 8,
+  },
+  photoBtn: {
+    flexDirection: 'row',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+  },
+  preview: {width: '100%', height: 160, borderRadius: 12, marginTop: 12},
+  submit: {
+    marginTop: 32,
+    backgroundColor: colors.danger,
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
   },
   submitDisabled: {opacity: 0.7},
-  submitText: {...typography.body, fontWeight: '600'},
-  error: {color: colors.danger, fontSize: 12, marginTop: 4},
+  submitText: {...typography.body, fontWeight: '600', fontSize: 16},
+  error: {color: colors.danger, fontSize: 12, marginTop: 6},
+  errorText: {color: colors.danger, fontSize: 12},
 });

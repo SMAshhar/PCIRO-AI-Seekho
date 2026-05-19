@@ -56,12 +56,12 @@ export const ScoreBar: React.FC<Props> = ({
 const styles = StyleSheet.create({
   wrap: {marginBottom: 12},
   row: {flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6},
-  fraction: {...typography.label, fontFamily: 'monospace'},
+  fraction: {...typography.label, fontFamily: 'monospace', color: colors.text},
   track: {
-    height: 6,
-    borderRadius: 4,
-    backgroundColor: colors.void,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(56,189,248,0.1)',
     overflow: 'hidden',
   },
-  fill: {height: '100%', borderRadius: 4},
+  fill: {height: '100%', borderRadius: 2},
 });

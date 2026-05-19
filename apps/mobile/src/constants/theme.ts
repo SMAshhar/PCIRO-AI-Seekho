@@ -1,21 +1,40 @@
 import {TextStyle, ViewStyle} from 'react-native';
 
 export const colors = {
-  void: '#0F1923',
-  surface: '#1C2B3A',
-  navy: '#1A2B4A',
-  elevated: '#243549',
-  text: '#E8EFF5',
-  muted: '#6B7A8D',
-  border: 'rgba(232,239,245,0.08)',
+  // Backgrounds — 3-layer elevation system
+  void:         '#0F1923',   // screen background
+  navy:         '#0D1E36',   // header / navigation
+  surface:      '#1C2B3A',   // cards, sheets
+  elevated:     '#243549',   // pressed / hover states
+
+  // Text
+  text:         '#E8EFF5',   // primary text
+  muted:        '#6B7A8D',   // secondary / label text
+
+  // Borders
+  border:       'rgba(232,239,245,0.08)',
   borderStrong: 'rgba(232,239,245,0.12)',
-  danger: '#E63946',
-  blue: '#0077B6',
-  amber: '#F4A261',
-  green: '#2A9D8F',
-  noise: '#4A5568',
-  burntOrange: '#FF6B35',
-  deepCrimson: '#CC0000',
+
+  // Severity — traffic-light logic
+  danger:       '#E63946',   // critical
+  burntOrange:  '#FF6B35',   // high
+  amber:        '#F59E0B',   // medium
+  green:        '#22C55E',   // low
+  pakGreen:     '#01411C',   // resolved / safe — Pakistan identity accent
+
+  // Score zones
+  noise:        '#64748B',   // 0-30 — visible low-confidence gray
+  deepCrimson:  '#FF1744',   // 90-100 — max-alarm
+
+  // Accent / Interactive
+  blue:         '#38BDF8',   // primary interactive
+
+  // New utility tokens
+  success:      '#22C55E',
+  info:         '#38BDF8',
+  overlay:      'rgba(0,0,0,0.6)',
+  primaryGlow:  'rgba(56,189,248,0.15)',
+  dangerGlow:   'rgba(230,57,70,0.20)',
 };
 
 export const severity = {
