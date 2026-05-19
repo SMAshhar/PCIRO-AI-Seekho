@@ -9,6 +9,10 @@ dependencies = [
     "requests>=2.31.0",
     "pydantic>=1.10.0",
     "python-dotenv>=1.0.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "python-socketio>=5.11.0",
+    "python-multipart>=0.0.9",
 ]
 
 [project.scripts]
@@ -16,6 +20,7 @@ kickoff = "ciro.main:kickoff"
 run_crew = "ciro.main:kickoff"
 plot = "ciro.main:plot"
 run_with_trigger = "ciro.main:run_with_trigger"
+serve = "ciro.api.server:main"
 
 [build-system]
 requires = ["hatchling"]

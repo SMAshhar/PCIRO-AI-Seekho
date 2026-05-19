@@ -30,6 +30,10 @@ crewai flow plot
 
 # Replay from a specific task ID
 crewai replay -t <task_id>
+
+# Start FastAPI + Socket.IO for the mobile app (port 8000)
+uv run serve
+# or: uv run uvicorn ciro.api.server:app --host 0.0.0.0 --port 8000
 ```
 
 ## Architecture
