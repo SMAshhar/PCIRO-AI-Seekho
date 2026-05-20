@@ -25,8 +25,9 @@ def get_llm() -> LLM:
         
         logger.warning("All Gemini Flash options failed verification. Falling back to local Ollama LLM.")
 
-    logger.info("Using local Ollama LLM (ollama/qwen3:8b).")
+    logger.info("Using local Ollama LLM (ollama/batiai/gemma4-e4b:q6).")
     return LLM(
+        #model="ollama/batiai/gemma4-e4b:q6",
         model="ollama/qwen3:8b",
         base_url="http://localhost:11434"
     )

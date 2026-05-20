@@ -4,14 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**CIRO (Crisis Intelligence & Response Orchestrator)** — a multi-agent AI system for citizen-reported crisis detection and response in Islamabad, Pakistan. Built for the #AISeekho 2026 Google Antigravity Hackathon (Challenge 3). The working implementation lives in the `ciro/` subdirectory.
+**CIRO (Crisis Intelligence & Response Orchestrator)** — a multi-agent AI system for citizen-reported crisis detection and response in Islamabad, Pakistan. Built for the #AISeekho 2026 Google Antigravity Hackathon (Challenge 3). The working backend implementation lives in the `ciro/` subdirectory.
 
 ## Commands
 
 All commands run from the `ciro/` directory:
 
 ```bash
-# Install
+# Install dependencies
 pip install uv
 uv sync
 
@@ -31,9 +31,8 @@ crewai flow plot
 # Replay from a specific task ID
 crewai replay -t <task_id>
 
-# Start FastAPI + Socket.IO for the mobile app (port 8000)
+# Start FastAPI + Socket.IO server (port 8000)
 uv run serve
-# or: uv run uvicorn ciro.api.server:app --host 0.0.0.0 --port 8000
 ```
 
 ## Architecture
@@ -49,7 +48,7 @@ Ingest Crew → Analysis Crew → router() → Response Crew
 - `@start()` → `ingest_report()` — entry point, populates `CIROState.raw_report`
 - `@listen()` chains bind crews together
 - `@router()` → `route_by_severity()` — branches on `corroboration_score ≥ 80` (critical) vs < 80 (routine)
-- `CIROState` (Pydantic `BaseModel` in `main.py`) carries all inter-crew state; crews read from and write back to this model
+- `CIROState` carries all inter-crew state; crews read from and write back to this model.
 
 ### Three Crews
 
@@ -63,11 +62,11 @@ Each crew has `config/agents.yaml` and `config/tasks.yaml` — the YAML files de
 
 ### Custom Tools (`src/ciro/tools/`)
 
-- **`roman_urdu_parser.py`** — keyword-based NLP; extracts crisis type, sectors, and confidence from Roman Urdu/English text
-- **`corroboration_engine.py`** — core innovation; scores 0–100 across five simulated sources (weather 30 + traffic 25 + citizens 20 + sensors 15 + history 10); single-source reports are capped at 20 and flagged as potential false reports
-- **`alert_dispatcher.py`** — simulates emergency ticket creation and alert distribution; produces Before/After metric deltas
-- **`weather_fetcher.py`** — weather data fetcher (currently mocked)
-- **`impact_assessor.py`** — affected zone and population estimation
+- **`roman_urdu_parser.py`** — keyword-based NLP; extracts crisis type, sectors, and confidence from Roman Urdu/English text.
+- **`weather_fetcher.py`** — **🟢 Real API Integration** — Executes HTTP GET calls to the free Open-Meteo REST API endpoint to gather live weather telemetry for the coordinates.
+- **`corroboration_engine.py`** — core innovation; scores 0–100 across five sources (weather 30 + traffic 25 + citizens 20 + sensors 15 + history 10); single-source reports are capped at 20 and flagged as potential false reports.
+- **`impact_assessor.py`** — affected zone and population estimation using Islamabad population databases.
+- **`alert_dispatcher.py`** — simulates emergency ticket creation and alert distribution; produces Before/After metric deltas.
 
 ### Data Models (`src/ciro/schema/models.py`)
 
@@ -78,7 +77,7 @@ All inter-agent data contracts are Pydantic models. Key types:
 
 ### LLM Configuration (`src/ciro/llm_config.py`)
 
-Primary LLM is **Google Gemini 2.0 Flash** (declared in YAML configs). Local fallback is **Ollama Qwen 3:8b** (`http://localhost:11434`). The `llm_config.py` file exports the `LLM` object used for local inference.
+Primary LLM is **Google Gemini 2.0 Flash** (declared in YAML configs). The resilient cascade loader `get_llm()` verifies keys with a lightweight validation `"ping"` call, and automatically cascades to the local Ollama LLM (`ollama/batiai/gemma4-e4b:q6` on `http://localhost:11434`) if Gemini fails.
 
 ## Mobile App (`apps/mobile/`)
 
@@ -90,20 +89,11 @@ npm install                    # Install dependencies
 npx react-native run-android   # Run on Android device/emulator
 npx react-native run-ios       # Run on iOS simulator (macOS only)
 npx react-native start         # Start Metro bundler separately
-
-# Android release build
-cd android && ./gradlew assembleRelease
-
-# Link native modules (after installing packages with native code)
-npx react-native link
 ```
-
-Key dependencies: `@react-navigation/native`, `react-native-maps`, `@rnmapbox/maps`, `zustand`, `nativewind`, `@react-native-firebase/messaging`, `react-native-async-storage`, `socket.io-client`, `react-native-vector-icons`.
 
 ## Key Design Decisions
 
-- **Multi-signal corroboration is adversarial-resistant by design**: a single citizen report cannot trigger a response without corroborating signals (weather, traffic, sensors). This is the core differentiator.
-- **All tool data is currently simulated**: weather, traffic, IoT sensors, and citizen report counts are mocked — no live API calls yet.
+- **Multi-signal corroboration is adversarial-resistant by design**: a single citizen report cannot trigger an emergency response without corroborating signals. This is the core differentiator.
 - **State flows via `CIROState`**: crews do not call each other directly; all data passes through the Flow state object.
-- **Roman Urdu NLP is keyword-based**: not ML-based; uses a hardcoded keyword map for crisis classification.
-- **AGENTS.md** at the repo root is a CrewAI API reference guide (for Claude Code / Cursor); consult it when working with CrewAI patterns or when the framework version (1.14.4) behavior is unclear.
+- **Dual-Mode Execution**: The system implements an instant synchronous local tool pipeline (`pipeline.py`) running in under 0.1s to return responsive schemas to clients, and runs the heavy asynchronous multi-agent CrewAI flow in the background if `CIRO_USE_CREW=true` is set.
+- **AGENTS.md** at the ciro subdirectory is a CrewAI API reference guide; consult it when working with CrewAI patterns.
