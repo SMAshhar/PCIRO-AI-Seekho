@@ -7,7 +7,7 @@
 [![Orchestration: CrewAI_Flows](https://img.shields.io/badge/Orchestration-CrewAI%20Flows-orange)]()
 [![LLM: Gemini_2.0_&_Ollama](https://img.shields.io/badge/LLM-Gemini%202.0%20%2F%20Ollama-purple)]()
 
-CIRO (Crisis Intelligence & Response Orchestrator) is a state-of-the-art, adversarial-resistant, agentic AI platform designed for urban Pakistan, tailored to handle street reports in Roman Urdu, English, and Urdu, and orchestrate emergency logistics. 
+PCIRO (Pakistan Crisis Intelligence & Response Orchestrator) is a state-of-the-art, adversarial-resistant, agentic AI platform designed for urban Pakistan, tailored to handle street reports in Roman Urdu, English, and Urdu, and orchestrate emergency logistics. 
 
 Developed for the **#AISeekho 2026 Google Antigravity Hackathon (Challenge 3)**, CIRO introduces a highly performant **Hybrid Dual-Mode Architecture** combining instant microsecond local tool pipelines with full multi-agent CrewAI reasoning.
 
@@ -15,7 +15,7 @@ Developed for the **#AISeekho 2026 Google Antigravity Hackathon (Challenge 3)**,
 
 ## 🏗️ System Architecture
 
-CIRO solves the fundamental challenge of modern LLM pipelines: **balancing deep multi-agent reasoning with sub-second API responsiveness**. To achieve this, it implements a hybrid execution flow:
+PCIRO solves the fundamental challenge of modern LLM pipelines: **balancing deep multi-agent reasoning with sub-second API responsiveness**. To achieve this, it implements a hybrid execution flow:
 
 ```
                   Citizen Report (Roman Urdu/GPS)
