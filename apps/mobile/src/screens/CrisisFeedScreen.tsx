@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../navigation/types';
 import {useCrisisStore} from '../store/crisisStore';
@@ -18,6 +18,7 @@ import {CrisisCard} from '../components/CrisisCard';
 import {IncidentBanner} from '../components/IncidentBanner';
 import {useT} from '../utils/i18n';
 import {colors, spacing, typography} from '../constants/theme';
+import {config} from '../constants/config';
 import {Severity} from '../types/models';
 
 type Filter = 'all' | Severity | 'resolved';
@@ -61,10 +62,23 @@ export const CrisisFeedScreen = () => {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    const data = await crisisApi.getActiveCrises();
-    useCrisisStore.getState().setCrises(data);
-    setRefreshing(false);
+    try {
+      const data = await crisisApi.getActiveCrises();
+      useCrisisStore.getState().setCrises(data);
+    } finally {
+      setRefreshing(false);
+    }
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!config.USE_MOCK_DATA) {
+        crisisApi.getActiveCrises().then(data => {
+          useCrisisStore.getState().setCrises(data);
+        });
+      }
+    }, []),
+  );
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -77,7 +91,7 @@ export const CrisisFeedScreen = () => {
         />
       )}
       <View style={styles.header}>
-        <Text style={styles.title}>{t('feedTitle') || 'CIRO'}</Text>
+        <Text style={styles.title}>{t('feedTitle') || 'PCIRO'}</Text>
         <Text style={styles.subtitle}>{t('liveOverview')}</Text>
       </View>
       <ScrollView

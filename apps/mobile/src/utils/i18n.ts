@@ -2,7 +2,7 @@ import {useUserStore} from '../store/userStore';
 
 const strings = {
   en: {
-    feedTitle: 'CIRO',
+    feedTitle: 'PCIRO',
     reportTitle: 'Report a Crisis',
     settingsTitle: 'Settings',
     submitReport: 'Submit Report',
@@ -77,7 +77,7 @@ const strings = {
     zones: 'zones',
   },
   ur: {
-    feedTitle: 'سی آئی آر او',
+    feedTitle: 'پی سی آئی آر او',
     reportTitle: 'بحران رپورٹ کریں',
     settingsTitle: 'ترتیبات',
     submitReport: 'رپورٹ جمع کریں',

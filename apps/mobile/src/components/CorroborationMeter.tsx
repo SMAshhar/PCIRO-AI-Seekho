@@ -23,7 +23,7 @@ export const CorroborationMeter: React.FC<Props> = ({
   size = 160,
   animated = true,
 }) => {
-  const stroke = 8;
+  const stroke = 12;
   const r = (size - stroke) / 2;
   const cx = size / 2;
   const cy = size / 2;
@@ -60,9 +60,10 @@ export const CorroborationMeter: React.FC<Props> = ({
             cx={cx}
             cy={cy}
             r={r}
-            stroke={colors.border}
+            stroke="rgba(255,255,255,0.05)"
             strokeWidth={stroke}
             fill="none"
+            strokeLinecap="round"
             strokeDasharray={`${maxSweep} ${circumference}`}
             rotation={160}
             origin={`${cx}, ${cy}`}
@@ -75,16 +76,18 @@ export const CorroborationMeter: React.FC<Props> = ({
             strokeWidth={stroke}
             fill="none"
             strokeLinecap="round"
-            strokeDasharray={`${maxSweep} ${circumference}`}
+            strokeDasharray={`${circumference} ${circumference}`}
             animatedProps={animatedProps}
             rotation={160}
             origin={`${cx}, ${cy}`}
           />
         </Svg>
         <View style={styles.center}>
-          <Text style={typography.score}>{Math.round(score)}</Text>
-          <Text style={[typography.badge, {color: colors.muted, marginTop: 4}]}>
-            {zone.label}
+          <Text style={[typography.score, {fontSize: 42, lineHeight: 46, fontWeight: '600'}]}>
+            {Math.round(score)}
+          </Text>
+          <Text style={[typography.badge, {color: colors.muted, marginTop: 6, letterSpacing: 1.5}]}>
+            {zone.label.toUpperCase()}
           </Text>
         </View>
     </View>

@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">CIRO</string>
+    <string name="app_name">PCIRO</string>
     <string name="google_maps_key">YOUR_GOOGLE_MAPS_API_KEY</string>
 </resources>

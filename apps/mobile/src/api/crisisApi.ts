@@ -25,8 +25,11 @@ export const crisisApi = {
       const crisis = MOCK_CRISES.find(c => c.event_id === id);
       return JSON.stringify(crisis?.agent_trace ?? [], null, 2);
     }
-    const {data} = await apiClient.get<string>(`/api/crises/${id}/trace`);
-    return data;
+    const {data} = await apiClient.get<string | object>(`/api/crises/${id}/trace`);
+    if (typeof data === 'string') {
+      return data;
+    }
+    return JSON.stringify(data, null, 2);
   },
 
   getSimulation: async (id: string) => {

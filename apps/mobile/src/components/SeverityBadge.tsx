@@ -28,7 +28,7 @@ export const SeverityBadge: React.FC<Props> = ({severity, size = 'md'}) => {
          severity === 'high' ? t('sevHigh').toUpperCase() :
          severity === 'medium' ? t('sevMedium').toUpperCase() :
          severity === 'low' ? t('sevLow').toUpperCase() :
-         severity === 'resolved' ? t('sevResolved').toUpperCase() : severity.toUpperCase()}
+         severity === 'resolved' ? t('sevResolved').toUpperCase() : String(severity).toUpperCase()}
       </Text>
     </View>
   );

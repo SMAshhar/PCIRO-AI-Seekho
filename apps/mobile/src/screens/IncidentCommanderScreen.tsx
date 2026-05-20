@@ -86,7 +86,7 @@ export const IncidentCommanderScreen: React.FC<Props> = ({
       </View>
       <ScrollView contentContainerStyle={styles.scroll}>
         <SeverityBadge severity={crisis.severity} />
-        <Text style={styles.title}>{crisis.title}</Text>
+        <Text style={styles.title}>{crisis.summary || crisis.title}</Text>
         <CorroborationMeter score={crisis.corroboration_score} size={140} />
         {crisis.confidence != null && (
           <Text style={typography.label}>

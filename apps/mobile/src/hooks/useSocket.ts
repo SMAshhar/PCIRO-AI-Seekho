@@ -2,6 +2,7 @@ import {useEffect, useRef} from 'react';
 import {io, Socket} from 'socket.io-client';
 import {config} from '../constants/config';
 import {useCrisisStore} from '../store/crisisStore';
+import {useNotificationStore} from '../store/notificationStore';
 import {useSocketStore} from '../store/socketStore';
 import {useUserStore} from '../store/userStore';
 import {CrisisEvent} from '../types/models';
@@ -49,6 +50,10 @@ export const useSocket = (enabled = true) => {
         useCrisisStore.getState().updateScore(crisisId, score);
       },
     );
+
+    socket.on('commander:approval_required', () => {
+      useNotificationStore.getState().incrementPending();
+    });
 
     return () => {
       socket.disconnect();

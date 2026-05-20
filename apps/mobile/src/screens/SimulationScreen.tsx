@@ -9,12 +9,11 @@ import {
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import MapView, {Marker, Polyline, PROVIDER_GOOGLE} from 'react-native-maps';
+import MapView, {Marker, Polyline, PROVIDER_GOOGLE, UrlTile} from 'react-native-maps';
 import {RootStackParamList} from '../navigation/types';
 import {useCrisisDetail} from '../hooks/useCrisisDetail';
 import {SimulationDiff} from '../components/SimulationDiff';
 import {LoadingSpinner} from '../components/LoadingSpinner';
-import {darkMapStyle} from '../constants/mapStyle';
 import {colors, spacing, typography} from '../constants/theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Simulation'>;
@@ -50,10 +49,16 @@ export const SimulationScreen: React.FC<Props> = ({route, navigation}) => {
     <MapView
       style={styles.map}
       provider={PROVIDER_GOOGLE}
-      customMapStyle={darkMapStyle}
+      mapType="none"
       region={region}
       scrollEnabled={false}
       zoomEnabled={false}>
+      <UrlTile
+        urlTemplate="https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+        shouldReplaceMapContent={true}
+        maximumZ={19}
+        tileSize={256}
+      />
       <Polyline
         coordinates={mode === 'before' ? beforeRoute : afterRoute}
         strokeColor={mode === 'before' ? colors.danger : colors.blue}

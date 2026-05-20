@@ -210,13 +210,14 @@ def process_report(payload: ReportCreate, event_id: str | None = None) -> Crisis
     else:
         status = CrisisStatus.ACTIVE
 
-    label = crisis_type.value.replace("_", " ").title()
-    title = f"{sector} {label}"
+    report_description = payload.text.strip()
+    title = report_description
 
     return CrisisEventOut(
         event_id=event_id,
         crisis_type=crisis_type,
         title=title,
+        report_description=report_description,
         sector=sector,
         location=CrisisLocation(lat=loc.lat, lon=loc.lon, sector=sector),
         severity=severity,

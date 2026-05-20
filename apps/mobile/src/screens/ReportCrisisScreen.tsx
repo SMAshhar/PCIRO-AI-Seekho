@@ -15,11 +15,14 @@ import {Controller, useForm} from 'react-hook-form';
 import {launchImageLibrary} from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {reportApi} from '../api/reportApi';
+import {waitForCrisisAfterReport} from '../api/pollCrisis';
+import {useCrisisStore} from '../store/crisisStore';
 import {useLocation} from '../hooks/useLocation';
 import {useUserStore} from '../store/userStore';
 import {CrisisType} from '../types/models';
 import {colors, spacing, typography} from '../constants/theme';
 import {useT} from '../utils/i18n';
+import {config} from '../constants/config';
 
 
 interface FormValues {
@@ -78,7 +81,16 @@ export const ReportCrisisScreen = () => {
         photo_url,
         device_id: deviceId,
       });
-      Alert.alert('Report submitted', `ID: ${res.report_id}`);
+      if (!config.USE_MOCK_DATA) {
+        const crisis = await waitForCrisisAfterReport(res.event_id);
+        if (crisis) {
+          useCrisisStore.getState().addOrUpdateCrisis(crisis);
+        }
+      }
+      Alert.alert(
+        'Report submitted',
+        `Event: ${res.event_id}${res.status === 'processing' ? ' (processing)' : ''}`,
+      );
       reset();
       setPhotoUri(null);
     } catch {
