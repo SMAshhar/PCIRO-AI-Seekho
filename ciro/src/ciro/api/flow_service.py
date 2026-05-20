@@ -7,7 +7,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 from ciro.api.pipeline import process_report
 from ciro.api.schemas import ReportCreate
-from ciro.main import CIROFlow
 
 _executor = ThreadPoolExecutor(max_workers=int(os.getenv("CIRO_FLOW_WORKERS", "2")))
 
@@ -24,6 +23,7 @@ def _run_crew_flow(payload: ReportCreate, event_id: str) -> None:
         "event_id": event_id,
     }
     try:
+        from ciro.main import CIROFlow
         flow = CIROFlow()
         flow.kickoff({"crewai_trigger_payload": trigger})
     except Exception:
