@@ -35,7 +35,7 @@ class LLMConfigTest(unittest.TestCase):
 
         # Check that LLM was called with the Ollama model
         mock_llm_class.assert_any_call(
-            model="ollama/qwen3:8b",
+            model="ollama/batiai/gemma4-e4b:q6",
             base_url="http://localhost:11434"
         )
         self.assertEqual(ciro.llm_config.local_llm, mock_llm_instance)
@@ -58,7 +58,7 @@ class LLMConfigTest(unittest.TestCase):
 
         # Check that it tried gemini-1.5-flash and gemini-2.0-flash, then fell back to ollama
         mock_llm_class.assert_any_call(
-            model="ollama/qwen3:8b",
+            model="ollama/batiai/gemma4-e4b:q6",
             base_url="http://localhost:11434"
         )
         self.assertEqual(ciro.llm_config.local_llm, mock_ollama_instance)
@@ -84,7 +84,7 @@ class LLMConfigTest(unittest.TestCase):
         # Verify LLM was NOT called with ollama
         for call_args in mock_llm_class.call_args_list:
             model_arg = call_args[1].get("model") or call_args[0][0]
-            self.assertNotEqual(model_arg, "ollama/qwen3:8b")
+            self.assertNotEqual(model_arg, "ollama/batiai/gemma4-e4b:q6")
 
 if __name__ == "__main__":
     unittest.main()

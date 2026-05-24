@@ -1,375 +1,273 @@
-# Smart Urban Community Resilience System
+# PCIRO — Pakistan Crisis Intelligence & Response Orchestrator
+### *Street Complaint to Coordinated Response in 60 Seconds*
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)]()
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)]()
-[![CI](https://img.shields.io/badge/ci-pending-yellow)]()
+[![API: FastAPI](https://img.shields.io/badge/API-FastAPI-teal)]()
+[![Orchestration: CrewAI_Flows](https://img.shields.io/badge/Orchestration-CrewAI%20Flows-orange)]()
+[![LLM: Gemini_2.0_&_Ollama](https://img.shields.io/badge/LLM-Gemini%202.0%20%2F%20Ollama-purple)]()
 
-A sophisticated AI-powered system for urban emergency management and community resilience using CrewAI. This project implements an intelligent system that monitors, analyzes, and responds to urban emergencies through a network of specialized AI agents.
+PCIRO (Pakistan Crisis Intelligence & Response Orchestrator) is a state-of-the-art, adversarial-resistant, agentic AI platform designed for urban Pakistan, tailored to handle street reports in Roman Urdu, English, and Urdu, and orchestrate emergency logistics. 
 
-# Vision >>> [link](https://github.com/SMAshhar/CrewAiChallenge-Smart-Urban-Community-Resilience/blob/main/Smart%20Urban%20Community%20Resilience.pdf) <<<
-
-#### ⚠️ NOTE:-
-- This repo contains the **Agentic / GenAI** portion only. Event-driven infra is planned but not fully implemented.
-- Some tools (for example the Communicator) are partially implemented — agent calls may be iterative until tool pipelines are completed. We are optimizing for fewer calls.
-- Performance: experimental runs show **high token usage** with the current agent traces. See `PERFORMANCE.md` for measured values and mitigations.
-
-## 🌟 Features
-
-- Real-time data collection from multiple sources (weather, IoT sensors, citizen reports)
-- Automated event detection and classification
-- Spatial impact assessment and resource optimization
-- Intelligent routing and logistics planning
-- Multi-channel communication system
-- Privacy-aware data handling
-- Human-in-the-loop validation
-- Continuous learning and improvement
-
-## 🏗 Architecture
-
-The system is built on a modern event-driven architecture with these key components:
-
-1. **Data Ingestion Layer**: Collects data from various sources
-2. **Processing Pipeline**: Normalizes and validates data
-3. **Event Detection System**: Identifies and classifies urban incidents
-4. **Response Planning**: Assesses impact and allocates resources
-5. **Execution Layer**: Handles logistics and communications
-6. **Learning System**: Provides continuous improvement
-7. **Privacy Layer**: Ensures data protection and compliance
-
-### High-level Architecture
-
-```
-Data Sources -> Ingest Layer -> Event Bus -> Agent Runtimes (Crews) -> Action & Execution Systems -> Human-in-the-loop UI / Dashboard -> Storage & ML Pipeline -> Observability / Security / Admin
-```
-
-#### Key Components:
-
-- **Data Sources:** weather APIs, air-quality feeds, sensor networks (MQTT), citizen reports, emergency feeds (USGS, NWS), municipal systems, social listening
-- **Ingest Layer:** collectors + normalizer + enrichment (geocoding, reverse geocoding)
-- **Event Bus:** durable stream (Kafka / managed streaming) or pub/sub for inter-agent comms and replay
-- **Agent Runtimes:** CrewAI agents (stateless where possible, state in DB / caches) grouped across Monitor → Analyze → Respond phases
-- **Action & Execution:** dispatchers that call SMS/email, municipal dispatch systems, volunteer platforms, or 3rd-party tools
-- **Human-in-the-loop UI:** role-based dashboard (map + timeline + approval pane)
-- **Storage & ML:** time-series DB for sensor stream, PostGIS for spatial, object storage for logs, ML training pipeline & model registry
-- **Observability / Security / Admin:** Prometheus/Grafana, tracing/Sentry, CrewAI Maxim/agent-evals for per-execution traces and evaluation
-
-## 🤖 Agent System
-
-**11 specialized agents** — short form. See `config/agents.md` for configs and detailed I/O.
-
-1. **Feed Collector** — gathers weather, OpenAQ, USGS, MQTT, citizen webhooks → `raw.feeds`.
-2. **Data Normalizer & Enricher** — schema validation, geocoding, dedupe → `events.normalized`.
-3. **Data Validator** — integrity checks and schema enforcement.
-4. **Event Detector & Classifier** — rules + lightweight ML → `events.detected` (type, confidence).
-5. **Impact Assessor** — maps affected polygons, population, infra impact → `events.assessed`.
-6. **Resource Recommender & Prioritizer** — resource assignments & ETA → `plans.recommended`.
-7. **Logistics & Routing Agent** — dispatch routing + commands → `plans.executed`.
-8. **Communicator** — formats messages for dashboard, SMS, email, social drafts.
-9. **Human-in-the-loop Validator (Incident Commander)** — approval/modification UI.
-10. **Learning & Feedback Agent** — creates training datasets, queues retraining.
-11. **Privacy & Consent Manager** — PII handling, anonymization, consent audits.
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Python 3.10+ (as specified in pyproject.toml)
-- PostgreSQL with PostGIS extension
-- Redis (for caching)
-- Docker (optional)
+Developed for the **#AISeekho 2026 Google Antigravity Hackathon (Challenge 3)**, CIRO introduces a highly performant **Hybrid Dual-Mode Architecture** combining instant microsecond local tool pipelines with full multi-agent CrewAI reasoning.
 
 ---
 
-## 🚀 Installation and Running
+## 🏗️ System Architecture
 
-Follow these simple steps to get the Smart Urban Resilience System up and running.
+PCIRO solves the fundamental challenge of modern LLM pipelines: **balancing deep multi-agent reasoning with sub-second API responsiveness**. To achieve this, it implements a hybrid execution flow:
 
-### 1. Clone the Repository
+```
+                  Citizen Report (Roman Urdu/GPS)
+                                 │
+                                 ▼
+                     POST /api/reports (FastAPI)
+                                 │
+            ┌────────────────────┴────────────────────┐
+            │ (Synchronous Path - under 0.1s)         │ (Asynchronous Path - background worker)
+            ▼                                         ▼
+   ┌────────────────────────────────┐        ┌────────────────────────────────┐
+   │ Local Tool Pipeline            │        │ Asynchronous CrewAI Flow       │
+   │ (`pipeline.py` execution)      │        │ (Only if `CIRO_USE_CREW=true`) │
+   ├────────────────────────────────┤        ├────────────────────────────────┤
+   │ 1. `roman_urdu_parser`         │        │ 1. Ingest Crew (2 agents)      │
+   │ 2. `weather_fetcher` (Live API)│        │    - Roman Urdu parsing        │
+   │ 3. `corroboration_engine`      │        │    - Value normalization       │
+   │ 4. `impact_assessor`           │        │ 2. Analysis Crew (3 agents)    │
+   │ 5. `alert_dispatcher`          │        │    - Weather & signal scoring  │
+   ├────────────────────────────────┤        │    - Threat detection & safety │
+   │ Instantly generates a structured│        │    - Impact calculations      │
+   │ `CrisisEventOut` event with    │        │ 3. Severity Router             │
+   │ simulated traces & metrics for │        │    - score >= 80 -> HIL Gate   │
+   │ real-time client responsiveness│        │ 4. Response Crew (2 agents)    │
+   └────────────────┬───────────────┘        │    - Action lists & Roman Urdu │
+                    │                        │    - Logistical dispatch tool  │
+                    ▼                        └────────────────┬───────────────┘
+            crisis_store.upsert()                             │
+                    │                                         │
+                    ├─────────────────────────────────────────┘
+                    ▼
+          Socket.IO Live Broadcast (crisis:new / crisis:updated)
+```
 
-First, clone the project repository to your local machine:
+1. **Synchronous Local Tool Pipeline (`pipeline.py`):** Runs the exact same core algorithms (parsing, weather fetching, corroboration scoring, spatial assessment, and logistics planning) using high-performance Python functions. Executes in **< 0.1 seconds**, ensuring the mobile client receives immediate visual feedback, fully mapped states, and simulated trace previews.
+2. **Asynchronous Multi-Agent Flow (`flow_service.py`):** If `CIRO_USE_CREW=true` is enabled, the backend spawns a background worker via a `ThreadPoolExecutor` to run the true heavy LLM-based `CIROFlow` (orchestrated by CrewAI), updating the event in the background and emitting real-time updates via WebSockets when complete.
 
+---
+
+## 🤖 The CrewAI Flow & Specialized Agents
+
+The CrewAI Flow (`CIROFlow` in `main.py`) manages the state of the crisis across 3 specialized crews utilizing **7 collaborative AI agents**:
+
+```
+[ Ingest Crew ] ───► [ Analysis Crew ] ───► [ Router ] ───► [ Response Crew ]
+  - nlp_parser         - signal_corroborator                 - response_planner
+  - data_normalizer    - event_detector                      - logistics_agent
+                       - impact_assessor_agent
+```
+
+### 1. The Ingest Crew
+*   **NLP Parser (`nlp_parser`):**
+    *   *Role:* Roman Urdu NLP Crisis Parser.
+    *   *Goal:* Parse citizen crisis reports written in Roman Urdu or English, extracting the crisis type, keywords, and geolocated sectors.
+    *   *Backstory:* An expert in Pakistani languages, trained in informal Roman Urdu dialects like *"G-10 mein pani bhar gaya"* (flooding in G-10).
+    *   *Tools:* `roman_urdu_parser` (local tokenization tool).
+*   **Data Normalizer (`data_normalizer`):**
+    *   *Role:* Crisis Data Normalizer.
+    *   *Goal:* Structure and clean raw inputs into validated schemas matching strict system enums and verified Islamabad coordinates.
+    *   *Backstory:* A data engineer specializing in emergency management telemetry; ensures records are sanitized and deduplicated.
+
+### 2. The Analysis Crew
+*   **Signal Corroborator (`signal_corroborator`):**
+    *   *Role:* Multi-Signal Corroboration Analyst.
+    *   *Goal:* Cross-reference reports against weather telemetry, traffic indices, sensor networks, and historical hotspots to calculate a credibility score.
+    *   *Backstory:* A senior NDMA intelligence analyst who cross-checks all inputs, remaining vigilant against malicious or manipulated reports.
+    *   *Tools:* `weather_fetcher`, `corroboration_engine`.
+*   **Event Detector (`event_detector`):**
+    *   *Role:* Crisis Event Detector and Classifier.
+    *   *Goal:* Evaluate corroborated scores to officially detect a verified event and assign a status-dependent severity level.
+    *   *Backstory:* An experienced EOC manager in Islamabad who categorizes crises based on objective data rather than alarmist reports.
+*   **Impact Assessor (`impact_assessor_agent`):**
+    *   *Role:* Impact Assessment Specialist.
+    *   *Goal:* Calculate spatial impact, including population affected, hospitals/schools at risk, and estimated emergency arrival windows.
+    *   *Backstory:* An urban planning specialist with deep geodata maps of Islamabad's sectors.
+    *   *Tools:* `impact_assessor`.
+
+### 3. The Response Crew
+*   **Response Planner (`response_planner`):**
+    *   *Role:* Emergency Response Planner.
+    *   *Goal:* Generate prioritized action steps and dual-language (English and Roman Urdu) emergency alert broadcasts.
+    *   *Backstory:* A logistics coordinator who plans deployments with clear priorities and measurable simulations.
+*   **Logistics Agent (`logistics_agent`):**
+    *   *Role:* Logistics and Alert Dispatcher.
+    *   *Goal:* Execute response operations, assign emergency tracking tickets, and map alert channel matrices.
+    *   *Backstory:* An EOC dispatch officer coordinating communications (SMS, Sirens, Radio).
+    *   *Tools:* `alert_dispatcher`.
+
+---
+
+## 🛠️ Custom System Tools
+
+CIRO implements 5 customized core tools inside `src/ciro/tools/`:
+
+1.  **`roman_urdu_parser` (Heuristic NLP Parser):**
+    *   Performs fast tokenization and keyword mapping (~40 Roman Urdu/English emergency keywords).
+    *   Identifies Islamabad sector mentions (e.g., `G-10`, `I-8`, `F-7`, `Nallah Lai`) and calculates confidence weights.
+2.  **`weather_fetcher` (🟢 Real API Integration):**
+    *   Executes real HTTP requests to the **Open-Meteo REST API** to gather real-time precipitation, temperature, humidity, and wind telemetry.
+    *   Provides graceful degradation (falls back to safe baselines if the network is unavailable).
+3.  **`corroboration_engine` (Adversarial-Resistant Scorer):**
+    *   Uses a strict multi-weighted scoring algorithm (Max 100 points):
+        *   *Weather API (Rain/Storm verification):* 30 pts
+        *   *Maps Traffic Congestion:* 25 pts
+        *   *Citizen Report Counts:* 20 pts
+        *   *IoT Sensor Feeds:* 15 pts
+        *   *Historical Sector Hotspots:* 10 pts
+    *   > [!WARNING]
+        > **Anti-Manipulation Defense:** If a report is isolated (no historical hotspots, no corroborating weather/traffic spikes, and zero similar reports), the score is capped at a maximum of **20 points** and flagged as a `false_report` to prevent resource waste.
+4.  **`impact_assessor` (Spatial Lookup Engine):**
+    *   References an Islamabad sector database storing population figures, nearby hospitals (e.g., PIMS, Shifa), schools, and major roads.
+    *   Scales impact dynamically using severity multipliers (Low: 10%, Medium: 30%, High: 60%, Critical: 90% population affected).
+5.  **`alert_dispatcher` (Response Simulator):**
+    *   Generates unique emergency tracking IDs (`CIRO-YYYYMMDD-XXXX`).
+    *   Maps alert channels (Low/Medium → EOC Console only; High/Critical → SMS + Push Alerts; Critical → PA Sirens + Radio broadcast).
+    *   Simulates Before/After metrics (e.g., Congestion 87% → 34%, Rescue ETA 25 min → 8 min).
+
+---
+
+## 🔄 Resilient Cascade LLM Loader
+
+To ensure uninterrupted uptime during hackathon demos, CIRO utilizes a **Resilient Cascade LLM Loader** (`src/ciro/llm_config.py`):
+
+```
+                   Verify Gemini Flash API Key
+                                │
+                  ┌─────────────┴─────────────┐
+        [Key Found & Valid]             [Verification Fails or Missing]
+                  │                                   │
+                  ▼                                   ▼
+        Use Google Gemini (Cloud)           Fallback to Ollama (Local)
+        - `gemini-1.5-flash`                - `ollama/batiai/gemma4-e4b:q6`
+        - `gemini-2.0-flash`                - Base URL: `http://localhost:11434`
+```
+
+*   **Pinging Verification:** When started, `get_llm()` verifies the presence of `GEMINI_API_KEY`. If present, it executes a quick lightweight validation `"ping"` against `gemini-1.5-flash` or `gemini-2.0-flash`.
+*   **Local Ollama Fallback:** If the key is absent, rate-limited, or fails verification, the engine catches the exception and falls back to the local Ollama LLM configured to `"ollama/batiai/gemma4-e4b:q6"`.
+
+---
+
+## 🌐 FastAPI Server & Real-time WebSockets
+
+The backend runs a fully-featured FastAPI server that provides REST endpoints and WebSocket channels (Socket.IO) to link to mobile app frontends:
+
+### 1. REST Endpoints
+*   `GET /health` — Check server status, active thread queues, and total reports.
+*   `GET /api/crises` — Retrieve all active, unarchived crisis events sorted by score.
+*   `GET /api/crises/{id}` — Fetch detailed parameters of a specific event.
+*   `GET /api/crises/{id}/trace` — Retrieve full JSON agent execution logs.
+*   `GET /api/crises/{id}/simulation` — Get before/after metrics showing rescue impact.
+*   `POST /api/reports` — Endpoint for mobile clients to submit citizen reports.
+*   `POST /api/reports/upload` — Handle image uploads (e.g., disaster photos), returning unique URLs.
+*   `POST /api/devices/register` — Register device IDs for push notifications.
+
+### 2. Live Incident Commander Gates (HIL Validation)
+When a critical report is verified (corroboration score $\ge 80$), its status changes to `AWAITING_APPROVAL`. It halts automated logistics until an Incident Commander reviews and hits the approval gates:
+*   `POST /api/commander/approve` — Sets status to `ACTIVE`, appends commander notes, plans response actions, and broadcasts update.
+*   `POST /api/commander/reject` — Sets status to `ARCHIVED` (resolved), files a rejection reason, and resolves the dashboard ticket.
+
+### 3. WebSocket Event Emissions
+*   `crisis:new` — Fired immediately when a new report is processed.
+*   `crisis:updated` — Broadcasts when background crews complete or when commanders approve/reject a crisis.
+*   `crisis:resolved` — Emits when an incident is closed or rejected.
+*   `commander:approval_required` — Alerts operators that a critical crisis requires human validation.
+
+---
+
+## 📁 Repository Structure
+
+```
+test_antigravity/
+├── ciro/                           # Python Backend Module
+│   ├── src/ciro/
+│   │   ├── api/                    # FastAPI Server & API Layer
+│   │   │   ├── app.py              # Server configurations & routing
+│   │   │   ├── events.py           # Socket.IO WebSocket manager
+│   │   │   ├── pipeline.py         # Sync local tool pipeline (<0.1s execution)
+│   │   │   ├── flow_service.py     # Background CrewAI async flow scheduler
+│   │   │   └── store.py            # In-memory thread-safe state storage
+│   │   ├── crews/                  # CrewAI Crews
+│   │   │   ├── ingest_crew/        # parsing & normalizer crew
+│   │   │   ├── analysis_crew/      # weather, corroboration & impact crew
+│   │   │   └── response_crew/      # emergency planner & logistics crew
+│   │   ├── tools/                  # Customized core python tools
+│   │   ├── schema/                 # Pydantic typing schemas
+│   │   ├── main.py                 # CIROFlow orchestration class
+│   │   └── llm_config.py           # Resilient Gemini & Ollama cascade loader
+│   ├── tests/                      # Automated unittest suite
+│   ├── pyproject.toml              # UV dependencies & build configs
+│   └── uv.lock                     # UV locked requirements
+├── DESIGN.md                       # Mobile EOC Design System specifications
+├── HOW_IT_WORKS.md                 # Deep Developer Integration specifications
+├── MOBILE_APP.md                   # React Native mobile app details
+├── CLAUDE.md                       # LLM agent developer guidelines
+└── README.md                       # This File
+```
+
+---
+
+## 🚀 Installation & Running Guide
+
+### 1. Install `uv`
+Ensure you have `uv`, the extremely fast Python package manager:
 ```bash
- git clone https://github.com/SMAshhar/CrewAiChallenge-Smart-Urban-Community-Resilience.git
-cd smart-urban-resilience
-```
-
-### 2. Install `uv`
-
-Ensure you have `uv`, the fast Python package installer, installed on your system. If you don't have it, you can install it with the following command:
-
-```bash
-wget -qO- https://astral.sh/uv/install.sh | sh
-```
-OR
-```
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
-OR
-```
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
 
-### 3. Install CrewAI
-
-Make sure the CrewAI command-line tool is installed. If it's not already installed globally, you can add it with pip:
-
+### 2. Sync Dependencies
+Enter the `ciro` directory and synchronize all virtual environment packages:
 ```bash
-uv tool install crewai
+cd ciro
+uv sync
 ```
 
-### 4. Set Up Environment Variables
-
-Configure your environment variables by creating a `.env` file from the provided example.
-
+### 3. Setup Configuration
+Create a `.env` file under `ciro/` directory:
 ```bash
 cp .env.example .env
 ```
+Ensure you have set:
+*   `GEMINI_API_KEY` (if you want Gemini support).
+*   `CIRO_USE_CREW=true` (to trigger full CrewAI background multi-agent runs).
 
-Edit the newly created `.env` file with your specific API keys and configuration values.
-
-### 5. Run the System
-
-Go to the "main.py" file and set the location coordinates as you like . (KHI and LA are ready to test)
-You are now ready to run the system. Set the coordinates in the main.py (currently set for LA and Karachi) file and execute the following command from the root folder of the project:
-
+### 4. Setup Local LLM (If using Ollama Fallback)
+If you do not have a Gemini key, ensure Ollama is installed and running locally:
 ```bash
-crewai run
+ollama serve
+ollama pull batiai/gemma4-e4b:q6
 ```
 
-This command will automatically handle the project dependencies (using `uv` and the `pyproject.toml` file) and start the Smart Urban Resilience System.
-
-### Replaying Crew Execution
-
-To replay a previous crew execution from a specific task ID:
-
+### 5. Launch the Server
+Start the FastAPI server live on port `8000`:
 ```bash
-python smart_urban_resilience/src/smart_urban_resilience/main.py replay <task_id>
+uv run serve
 ```
 
-Or using the project script:
+### 6. Submit a Test Report
+Submit an emergency report (e.g., Roman Urdu flooding in G-10) using `curl`:
 ```bash
-replay <task_id>
+curl -X POST http://localhost:8000/api/reports \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "G-10 mein pani bhar gaya hai, road block hai",
+    "crisis_type": "unknown",
+    "location": {"lat": 33.6844, "lon": 73.0479, "sector": "G-10"},
+    "device_id": "cli-test-device"
+  }'
 ```
 
-### Testing the Crew
-
-To test the crew execution:
-
+### 7. Run Verification Tests
+Verify all configuration, LLM cascading, and REST routing components work correctly:
 ```bash
-python smart_urban_resilience/src/smart_urban_resilience/main.py test <n_iterations> <eval_llm>
+uv run python -m unittest tests/test_llm_config.py
+uv run python -m unittest tests/test_api.py
 ```
-
-Or using the project script:
-```bash
-test <n_iterations> <eval_llm>
-```
-
-### Accessing the Dashboard
-
-After starting the system, you can access the dashboard at:
-```
-http://localhost:8000/dashboard
-```
-
-## 📁 Project Structure
-
-```
-CrewAiChallenge-Smart-Urban-Community-Resilience/
-├── .gitignore
-├── architecture.md
-├── README.md                 <- This file
-└── smart_urban_resilience/
-    ├── .env                  <- Environment variables (create this file)
-    ├── .gitignore
-    ├── pyproject.toml        <- Project configuration and dependencies
-    ├── README.md             <- Additional README
-    ├── requirements.txt      <- Project dependencies
-    ├── test.py
-    ├── uv.lock
-    ├── data/                 <- Stores output data from tasks
-    │   ├── 1-normalized_data.json
-    │   ├── ...
-    │   └── Urban Sensor Data Collector/
-    │       └── karachi_data.json
-    ├── knowledge/            <- Stores knowledge base files
-    │   └── user_preference.txt
-    └── src/
-        └── smart_urban_resilience/
-            ├── __init__.py
-            ├── crew.py       <- Defines agents, tasks, and the CrewAI workflow
-            ├── main.py       <- Entry point for running the system
-            ├── config/
-            │   ├── agents.yaml   <- Agent configurations
-            │   └── tasks.yaml    <- Task configurations
-            ├── schema/
-            │   └── DataNormalizationSchema.py <- Pydantic schemas for data validation
-            └── tools/            <- Custom tools used by agents
-                ├── __init__.py
-                ├── CommunicationTool.py
-                ├── custom_tool.py
-                ├── DataFetchTool.py
-                ├── DataNormalizationTool.py
-                ├── EventDetectionTool.py
-                ├── FileStorageTool.py
-                ├── ImpactAcessorTool.py
-                ├── LearningTool.py
-                ├── Logistics_RoutingTool.py
-                ├── MessageNormalizationTool.py
-                ├── PrivacyTool.py
-                ├── QDrantToo.py
-                ├── ResourcePlannerTool.py
-                └── ValidationTool.py
-```
-
-
-## 📊 Data Model
-
-The system uses a canonical JSON schema for events:
-
-```json
-{
-  "event_id": "uuid-v4",
-  "ingest_timestamp": "2025-10-03T12:34:56Z",
-  "source": "openweather|openaq|sensor|citizen_report|usgs",
-  "raw_source_id": "<original id/uri>",
-  "type": "flood|air_quality|earthquake|power_outage|road_block",
-  "location": {
-    "lat": 24.8607,
-    "lon": 67.0011,
-    "zone_id": "city:ward:12",
-    "address": "optional string"
-  },
-  "severity": "low|medium|high|critical",
-  "confidence": 0.92,
-  "evidence": [
-    {"type":"sensor","id":"sensor-42","value": "0.85m", "ts":"..."},
-    {"type":"tweet","id":"...","text":"..."}
-  ],
-  "recommended_action": "shelter_open|dispatch_crew|advisory_sms",
-  "idempotency_token": "sha256-of-event-payload",
-  "trace_id": "crewai-trace-xxx"
-}
-```
-
-## 🛠 Tech Stack
-
-- **Orchestration / Agent Engine:** CrewAI flows + Maxim observability
-- **Event Bus / Streaming:** Apache Kafka (or managed equivalent)
-- **IoT Ingress:** MQTT broker (Eclipse Mosquitto) for sensor telemetry
-- **Time-series storage:** TimescaleDB (Postgres + PostGIS) for sensor & event time-series and spatial queries
-- **Geospatial:** PostGIS for spatial queries; Mapbox (commercial) or Nominatim (OSM) for geocoding; OSRM for routing/ETA
-- **Air / Weather / Hazard feeds:** OpenWeather (global weather), OpenAQ (air quality), NWS/NOAA (official alerts), USGS for earthquakes
-- **Messaging / Notifications:** Twilio for SMS / WhatsApp; SMTP for email
-- **Dashboard / Human-in-loop UI:** React + Map (Mapbox GL or Leaflet) + role-based auth
-- **ML infra:** Airflow for orchestration, MLflow for model registry
-- **Observability:** CrewAI Maxim for agent traces; Prometheus + Grafana for infra metrics; Sentry for exceptions
-- **Security:** Vault/KMS for secrets, TLS for all transport, OAuth2 for external APIs, RBAC
-- **DevOps:** Docker + Kubernetes (or managed k8s); CI/CD pipelines, blue/green for agent changes
-
-## 🧪 Testing
-
-Run the test suite:
-```bash
-pytest tests/
-```
-
-Run with coverage:
-```bash
-pytest --cov=smart_urban_resilience tests/
-```
-
-### Testing Strategy
-
-1. **Synthetic event generator:** script that simulates heavy rain → sensor spike → social reports → roadway flooding
-2. **Tabletop scenarios:** run 3 scenarios (fast flood, medium earthquake, air-quality spike)
-3. **Replay & A/B:** store all runs; replay to test rule changes
-4. **Chaos / failure tests:** simulate Mapbox outage, Twilio latency to show graceful fallback
-
-## 🔐 Security
-
-- All sensitive data is encrypted at rest
-- PII is handled according to GDPR guidelines
-- Role-based access control for all operations
-- Audit logging for all critical actions
-- Secrets & keys stored in KMS/Vault; rotate keys
-- Access control, RBAC for dashboard & approval flows
-- Audit logs for every action (who approved, what changed)
-- Data retention policy & PII minimization
-- Local law checks: municipal data sharing agreements before integrating live systems
-
-## 🔄 Reliability & Safety Patterns
-
-1. **Event-driven & Replayable:** stream everything to Kafka so you can replay when rules change or during post-event analysis
-2. **Idempotency for actions:** every external command (dispatch, SMS) uses idempotency token
-3. **Circuit Breakers & Rate Limits:** protect downstream APIs (Twilio, Mapbox) with circuit breakers & retry windows
-4. **DLQ & Poison Message Handling:** malformed inputs or repeated failures go to DLQ and a human queue
-5. **Graceful degradation:** if geocoding API fails, fall back to bounding-box heuristics
-6. **Human approval gating:** for `critical` events or low-confidence outputs, block auto-actions until Incident Commander agent approves
-7. **Versioned rules & canary rollouts:** push new rule sets/models behind feature flags
-8. **Privacy-first:** implement a Consent Manager; minimize PII in public channels
-
-## 📈 Observability & Evaluation
-
-- **Per-agent traces & Evals:** use CrewAI Maxim to capture agent tool calls, decisions and outputs for every run
-- **Metrics to track:**
-  - Ingest rate, processing latency (ms) for each agent
-  - Time from detection → notification (goal: under X minutes for `critical`)
-  - False positive / negative rate (from human feedback)
-  - Number of DLQ items and root causes
-  - Uptime SLAs for critical external connectors (Twilio, Mapbox)
-- **Dashboards:** Grafana for infra + CrewAI trace viewer for per-run breadcrumbs
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- My Wife and Family
-- My Abbi and Ammi
-- CrewAI framework
-- OpenWeatherMap API
-- Mapbox
-- OSRM
-- All contributors and maintainers
-
-## 📞 Contact
-
-Syed M. Ashhar - [GitHub](https://github.com/SMAshhar)
-Email - [mailto] syed.muhammad.ashhar@gmail.com
-Contact No. - [tel] 0092-344-3156626
-Project Link: [https://github.com/SMAshhar/CrewAiChallenge-Smart-Urban-Community-Resilience.git](https://github.com/SMAshhar/CrewAiChallenge-Smart-Urban-Community-Resilience.git)
-
-
-# Extra recommended files to add (quick list)
-- `docs/agents.md` (detailed I/O, sample messages, failure modes)
-- `PERFORMANCE.md` (measurements + mitigation checklist)
-- `SECURITY.md` (threat model + PII flows)
-- `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `ISSUE_TEMPLATE.md`, `PULL_REQUEST_TEMPLATE.md`
-- `docker-compose.yml` and `scripts/bootstrap.sh`
-- `.env.example` with keys/format
-- `examples/` containing one runnable synthetic scenario + expected artifacts
-
-## 📚 References
-
-- [CrewAI Documentation](https://docs.crewai.com/)
-- [OpenWeather API](https://openweathermap.org/api)
-- [OpenAQ Docs](https://docs.openaq.org/about/about)
-- [National Weather Service API](https://www.weather.gov/documentation/services-web-api)
-- [USGS Earthquake Hazards API](https://earthquake.usgs.gov/fdsnws/event/1/)
-- [Twilio Messaging API](https://www.twilio.com/docs/messaging/api)
-- [Eclipse Mosquitto Documentation](https://mosquitto.org/documentation/)
-- [TimescaleDB GitHub](https://github.com/timescale/timescaledb)
-- [Mapbox Geocoding API](https://docs.mapbox.com/api/search/geocoding/)
-- [OSRM API Documentation](https://project-osrm.org/docs/v5.10.0/api/)
-- [FEMA National Incident Management System](https://www.fema.gov/emergency-managers/nims)
-
-
