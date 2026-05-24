@@ -12,6 +12,7 @@ from typing import Any
 from fastapi import APIRouter, BackgroundTasks, FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from ciro.api import events
 from ciro.api.flow_service import submit_flow_async
@@ -170,6 +171,8 @@ def create_fastapi_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(router)
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
     @app.on_event("startup")
     async def on_startup() -> None:

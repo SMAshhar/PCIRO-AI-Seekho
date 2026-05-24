@@ -17,7 +17,8 @@ export const MOCK_CRISES: CrisisEvent[] = [
   {
     event_id: 'evt-g10-flood-001',
     crisis_type: 'flood',
-    title: 'G-10 Urban Flooding',
+    title: 'G-10 mein pani bhar gaya, road band hai',
+    report_description: 'G-10 mein pani bhar gaya, road band hai',
     sector: 'G-10',
     location: {lat: 33.6844, lon: 73.0479, sector: 'G-10'},
     severity: 'critical',
@@ -130,7 +131,8 @@ export const MOCK_CRISES: CrisisEvent[] = [
   {
     event_id: 'evt-i8-traffic-002',
     crisis_type: 'traffic_gridlock',
-    title: 'I-8 Markaz Gridlock',
+    title: 'I-8 Markaz par traffic jam hai, 2 ghante se khara',
+    report_description: 'I-8 Markaz par traffic jam hai, 2 ghante se khara',
     sector: 'I-8',
     location: {lat: 33.659, lon: 73.078, sector: 'I-8'},
     severity: 'high',
@@ -165,7 +167,8 @@ export const MOCK_CRISES: CrisisEvent[] = [
   {
     event_id: 'evt-f7-heat-003',
     crisis_type: 'heatwave',
-    title: 'F-7 Heat Advisory',
+    title: 'F-7 mein garmi bohat zyada hai, bachon ko dhoop se bachana',
+    report_description: 'F-7 mein garmi bohat zyada hai, bachon ko dhoop se bachana',
     sector: 'F-7',
     location: {lat: 33.721, lon: 73.037, sector: 'F-7'},
     severity: 'medium',

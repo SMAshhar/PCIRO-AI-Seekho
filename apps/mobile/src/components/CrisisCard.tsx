@@ -5,11 +5,11 @@ import {CrisisEvent} from '../types/models';
 import {colors, spacing, typography} from '../constants/theme';
 import {getSeverityColor} from '../utils/severityColors';
 import {formatRelativeTime} from '../utils/formatTime';
-import {getCrisisTypeLabel} from '../utils/crisisTypeLabels';
 import {getScoreZone} from '../utils/scoreZone';
 import {CrisisTypeIcon} from './CrisisTypeIcon';
 import {SeverityBadge} from './SeverityBadge';
 import {AgentTimeline} from './AgentTimeline';
+import {getReportDescription} from '../utils/crisisDisplay';
 import {useT} from '../utils/i18n';
 
 interface Props {
@@ -23,11 +23,7 @@ export const CrisisCard: React.FC<Props> = ({crisis, onPress, index = 0}) => {
   const severityColor = getSeverityColor(crisis.severity);
   const zone = getScoreZone(crisis.corroboration_score);
   const scorePct = crisis.corroboration_score;
-
-  let displayTitle = crisis.title;
-  if (crisis.title === 'G-10 Urban Flooding') displayTitle = t('mockFloodTitle');
-  if (crisis.title === 'I-8 Markaz Gridlock') displayTitle = t('mockTrafficTitle');
-  if (crisis.title === 'F-7 Heat Advisory') displayTitle = t('mockHeatTitle');
+  const displayTitle = getReportDescription(crisis) || t('describeHappening');
 
   return (
     <Animated.View entering={FadeInUp.delay(index * 50).duration(300)}>
@@ -41,7 +37,7 @@ export const CrisisCard: React.FC<Props> = ({crisis, onPress, index = 0}) => {
         <View style={styles.topRow}>
           <CrisisTypeIcon type={crisis.crisis_type} />
           <View style={styles.titleBlock}>
-            <Text style={typography.heading} numberOfLines={1}>
+            <Text style={typography.heading} numberOfLines={2}>
               {displayTitle}
             </Text>
             <Text style={typography.label}>

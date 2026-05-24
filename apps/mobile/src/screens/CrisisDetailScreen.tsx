@@ -19,9 +19,9 @@ import {SeverityBadge} from '../components/SeverityBadge';
 import {ScoreBar} from '../components/ScoreBar';
 import {AgentTimeline} from '../components/AgentTimeline';
 import {LoadingSpinner} from '../components/LoadingSpinner';
-import {darkMapStyle} from '../constants/mapStyle';
 import {getSeverityColor} from '../utils/severityColors';
 import {colors, spacing, typography} from '../constants/theme';
+import {getReportDescription} from '../utils/crisisDisplay';
 import {useT} from '../utils/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CrisisDetail'>;
@@ -49,10 +49,7 @@ export const CrisisDetailScreen: React.FC<Props> = ({route, navigation}) => {
   const showCommander =
     role === 'incident_commander' && crisis.status === 'awaiting_approval';
 
-  let displayTitle = crisis.title;
-  if (crisis.title === 'G-10 Urban Flooding') displayTitle = t('mockFloodTitle');
-  if (crisis.title === 'I-8 Markaz Gridlock') displayTitle = t('mockTrafficTitle');
-  if (crisis.title === 'F-7 Heat Advisory') displayTitle = t('mockHeatTitle');
+  const displayTitle = getReportDescription(crisis) || crisis.title;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
@@ -65,13 +62,12 @@ export const CrisisDetailScreen: React.FC<Props> = ({route, navigation}) => {
         </Text>
       </View>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <View style={styles.topSection}>
-          <SeverityBadge severity={crisis.severity} />
-        </View>
-
         <View style={styles.card}>
-          <Text style={styles.sectionHeader}>{t('corroborationScore')}</Text>
-          <CorroborationMeter score={crisis.corroboration_score} size={width * 0.45} />
+          <View style={styles.cardHeaderRow}>
+            <Text style={styles.sectionHeaderNoMargin}>{t('corroborationScore')}</Text>
+            <SeverityBadge severity={crisis.severity} size="sm" />
+          </View>
+          <CorroborationMeter score={crisis.corroboration_score} size={width * 0.55} />
         </View>
 
         <View style={styles.card}>
@@ -106,13 +102,15 @@ export const CrisisDetailScreen: React.FC<Props> = ({route, navigation}) => {
             <MapView
               style={styles.map}
               provider={PROVIDER_GOOGLE}
-              customMapStyle={darkMapStyle}
+              mapType="none"
               region={mapRegion}
               scrollEnabled={false}
               zoomEnabled={false}>
               <UrlTile
-                urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                urlTemplate="https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+                shouldReplaceMapContent={true}
                 maximumZ={19}
+                tileSize={256}
               />
               {coords && (
                 <Polygon
@@ -211,6 +209,18 @@ const styles = StyleSheet.create({
     borderColor: colors.borderStrong,
     padding: spacing.s5,
     overflow: 'hidden',
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  sectionHeaderNoMargin: {
+    ...typography.label,
+    color: colors.muted,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   sectionHeader: {
     ...typography.label,

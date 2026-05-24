@@ -7,7 +7,7 @@ export const usePushNotifications = () => {
 
   useEffect(() => {
     if (__DEV__) {
-      console.log('[CIRO] FCM registration stub for device', deviceId);
+      console.log('[PCIRO] FCM registration stub for device', deviceId);
     }
   }, [deviceId]);
 };

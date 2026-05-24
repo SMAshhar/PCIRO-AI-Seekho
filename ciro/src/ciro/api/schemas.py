@@ -88,6 +88,7 @@ class CrisisEventOut(BaseModel):
     event_id: str
     crisis_type: CrisisType
     title: str
+    report_description: Optional[str] = None
     sector: str
     location: CrisisLocation
     severity: Severity

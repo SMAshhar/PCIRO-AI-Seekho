@@ -73,6 +73,8 @@ export interface CrisisEvent {
   event_id: string;
   crisis_type: CrisisType;
   title: string;
+  /** Citizen report text from the Report screen description field */
+  report_description?: string;
   sector: string;
   location: CrisisLocation;
   severity: Severity;
@@ -96,4 +98,11 @@ export interface ReportPayload {
   location: CrisisLocation;
   photo_url?: string;
   device_id: string;
+}
+
+/** POST /api/reports response */
+export interface ReportSubmitResponse {
+  report_id: string;
+  event_id: string;
+  status: string;
 }
